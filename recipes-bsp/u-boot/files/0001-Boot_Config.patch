@@ -1,0 +1,86 @@
+diff --git a/arch/arm/dts/fsl-imx8mq-var-dart.dts b/arch/arm/dts/fsl-imx8mq-var-dart.dts
+index a76c3fd..7192ede 100644
+--- a/arch/arm/dts/fsl-imx8mq-var-dart.dts
++++ b/arch/arm/dts/fsl-imx8mq-var-dart.dts
+@@ -364,18 +364,18 @@
+ 
+ &usb_dwc3_0 {
+ 	status = "okay";
+-	dr_mode = "peripheral";
++	dr_mode = "host";
+ };
+ 
+ &usb3_phy1 {
+-	status = "okay";
++	status = "disabled";
+ };
+ 
+ &usb3_1 {
+-	status = "okay";
++	status = "disabled";
+ };
+ 
+ &usb_dwc3_1 {
+-	status = "okay";
++	status = "disabled";
+ 	dr_mode = "host";
+ };
+diff --git a/board/variscite/imx8mq_var_dart/imx8mq_var_dart.c b/board/variscite/imx8mq_var_dart/imx8mq_var_dart.c
+index dbac1c2..34ef75d 100644
+--- a/board/variscite/imx8mq_var_dart/imx8mq_var_dart.c
++++ b/board/variscite/imx8mq_var_dart/imx8mq_var_dart.c
+@@ -112,6 +112,7 @@ int board_init(void)
+ 	init_usb_clk();
+ #endif
+ 
++
+ 	return 0;
+ }
+ 
+@@ -125,6 +126,22 @@ int mmc_map_to_kernel_blk(int dev_no)
+ 	return dev_no;
+ }
+ 
++
++static iomux_v3_cfg_t const agr_pads[] = {
++        IMX8MQ_PAD_NAND_DATA03__GPIO3_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
++};
++
++
++#define LCD_EN IMX_GPIO_NR(3, 9)
++
++int agr_cfg_init(void)
++{
++        imx_iomux_v3_setup_multiple_pads(agr_pads, ARRAY_SIZE(agr_pads));
++        gpio_request(LCD_EN, "LCD_EN");
++        gpio_direction_output(LCD_EN, 1);
++        return 0;
++}
++
+ #define SDRAM_SIZE_STR_LEN 5
+ int board_late_init(void)
+ {
+@@ -150,6 +167,8 @@ int board_late_init(void)
+ 	board_late_mmc_env_init();
+ #endif
+ 
++	agr_cfg_init();
++
+ 	return 0;
+ }
+ 
+diff --git a/include/configs/imx8mq_var_dart.h b/include/configs/imx8mq_var_dart.h
+index b05aba2..ee3abce 100644
+--- a/include/configs/imx8mq_var_dart.h
++++ b/include/configs/imx8mq_var_dart.h
+@@ -118,8 +118,8 @@
+ 	"mmcautodetect=yes\0" \
+ 	"mmcpart=1\0" \
+ 	"m4_addr=0x7e0000\0" \
+-	"m4_bin=hello_world.bin\0" \
+-	"use_m4=no\0" \
++	"m4_bin=agronave_m4.bin\0" \
++	"use_m4=yes\0" \
+ 	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${m4_addr} ${bootdir}/${m4_bin}\0" \
+ 	"runm4bin=" \
+ 		"if test ${m4_addr} = 0x7e0000; then " \
