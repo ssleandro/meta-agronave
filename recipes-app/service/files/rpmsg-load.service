@@ -1,0 +1,12 @@
+[Unit]
+Description=Load RPMSG drivers
+After=multi-user.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/modprobe rpmsg_can
+ExecStart=/sbin/modprobe imx_rpmsg_tty
+
+[Install]
+WantedBy=multi-user.target

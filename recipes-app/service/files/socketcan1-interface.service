@@ -1,6 +1,6 @@
 [Unit]
 Description=SocketCAN interface can1 with a baudrate of 250000
-After=multi-user.target
+After=multi-user.target  rpmsg-load.service
 
 [Service]
 Type=oneshot
