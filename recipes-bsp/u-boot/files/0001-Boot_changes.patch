@@ -1,0 +1,159 @@
+diff --git a/arch/arm/dts/fsl-imx8mq-var-dart.dts b/arch/arm/dts/fsl-imx8mq-var-dart.dts
+index 231793f..8d9dfba 100644
+--- a/arch/arm/dts/fsl-imx8mq-var-dart.dts
++++ b/arch/arm/dts/fsl-imx8mq-var-dart.dts
+@@ -63,7 +63,8 @@
+ 	imx8mq-evk {
+ 		pinctrl_fec1: fec1grp {
+ 			fsl,pins = <
+-				MX8MQ_IOMUXC_ENET_MDC_ENET1_MDC			0x3
++//				MX8MQ_IOMUXC_ENET_MDC_ENET1_MDC			0x3
++				MX8MQ_IOMUXC_ENET_MDC_GPIO1_IO16                0x16
+ 				MX8MQ_IOMUXC_ENET_MDIO_ENET1_MDIO		0x23
+ 				MX8MQ_IOMUXC_ENET_TD3_ENET1_RGMII_TD3		0x1f
+ 				MX8MQ_IOMUXC_ENET_TD2_ENET1_RGMII_TD2		0x1f
+@@ -93,6 +94,8 @@
+ 			fsl,pins = <
+ 				MX8MQ_IOMUXC_UART1_RXD_UART1_DCE_RX		0x79
+ 				MX8MQ_IOMUXC_UART1_TXD_UART1_DCE_TX		0x79
++				MX8MQ_IOMUXC_NAND_ALE_GPIO3_IO0			0x16
++				MX8MQ_IOMUXC_NAND_CE0_B_GPIO3_IO1		0x16
+ 			>;
+ 		};
+ 
+@@ -207,12 +210,12 @@
+ 	phy-supply = <&reg_eth_phy>;
+ 	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+ 	phy-reset-duration = <10>;
+-	status = "okay";
++	status = "disabled";
+ 
+ 	mdio {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-
++		
+ 		ethphy0: ethernet-phy@0 {
+ 			compatible = "ethernet-phy-ieee802.3-c22";
+ 			reg = <0>;
+@@ -365,18 +368,18 @@
+ 
+ &usb_dwc3_0 {
+ 	status = "okay";
+-	dr_mode = "peripheral";
++	dr_mode = "host";
+ };
+ 
+ &usb3_phy1 {
+-	status = "okay";
++	status = "disabled";
+ };
+ 
+ &usb3_1 {
+-	status = "okay";
++	status = "disabled";
+ };
+ 
+ &usb_dwc3_1 {
+-	status = "okay";
++	status = "disabled";
+ 	dr_mode = "host";
+ };
+diff --git a/board/variscite/imx8mq_var_dart/imx8mq_var_dart.c b/board/variscite/imx8mq_var_dart/imx8mq_var_dart.c
+index ff3a161..c45bc76 100644
+--- a/board/variscite/imx8mq_var_dart/imx8mq_var_dart.c
++++ b/board/variscite/imx8mq_var_dart/imx8mq_var_dart.c
+@@ -20,6 +20,7 @@
+ #include <asm/arch/video_common.h>
+ #include <splash.h>
+ 
++
+ #include "../common/imx8_eeprom.h"
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+@@ -85,6 +86,25 @@ static int setup_fec(void)
+ }
+ #endif
+ 
++static iomux_v3_cfg_t const agr_pads[] = {
++        IMX8MQ_PAD_NAND_DATA03__GPIO3_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
++        IMX8MQ_PAD_ENET_MDC__GPIO1_IO16 | MUX_PAD_CTRL(NO_PAD_CTRL),
++};
++
++#define LCD_EN IMX_GPIO_NR(3, 9)
++#define ECU_WAKE IMX_GPIO_NR(1, 16)
++
++int agr_cfg_init(void)
++{
++        imx_iomux_v3_setup_multiple_pads(agr_pads, ARRAY_SIZE(agr_pads));
++        gpio_request(LCD_EN, "LCD_EN");
++        gpio_direction_output(LCD_EN, 1);
++        gpio_request(ECU_WAKE, "ECU_WAKE");
++        gpio_direction_output(ECU_WAKE, 0);
++
++        return 0;
++}
++
+ int board_init(void)
+ {
+ #ifdef CONFIG_FEC_MXC
+@@ -94,6 +114,7 @@ int board_init(void)
+ #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
+ 	init_usb_clk();
+ #endif
++	agr_cfg_init();
+ 
+ 	return 0;
+ }
+@@ -128,6 +149,8 @@ int board_late_init(void)
+ 	board_late_mmc_env_init();
+ #endif
+ 
++	agr_cfg_init();
++
+ 	return 0;
+ }
+ 
+diff --git a/include/configs/imx8mq_var_dart.h b/include/configs/imx8mq_var_dart.h
+index 138030c..161e47e 100644
+--- a/include/configs/imx8mq_var_dart.h
++++ b/include/configs/imx8mq_var_dart.h
+@@ -71,6 +71,9 @@
+ #undef CONFIG_CMD_CRC32
+ #undef CONFIG_BOOTM_NETBSD
+ 
++#undef CONFIG_CMD_NET
++#undef CONFIG_FEC_MXC
++
+ /* ENET Config */
+ /* ENET1 */
+ #if defined(CONFIG_CMD_NET)
+@@ -115,9 +118,12 @@
+ 	"mmcautodetect=yes\0" \
+ 	"mmcpart=1\0" \
+ 	"m4_addr=0x7e0000\0" \
+-	"m4_bin=hello_world.bin\0" \
+-	"use_m4=no\0" \
+-	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${m4_addr} ${bootdir}/${m4_bin}\0" \
++	"m4_bin=agronave_m4.bin\0" \
++	"m4_len=0x20000\0" \
++	"m4_taddr=0x48000000\0" \
++	"use_m4=yes\0" \
++	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${m4_taddr} ${bootdir}/${m4_bin};" \
++             	"cp.b ${m4_taddr} ${m4_addr} ${m4_len}\0" \
+ 	"runm4bin=" \
+ 		"if test ${m4_addr} = 0x7e0000; then " \
+ 			"echo Booting M4 from TCM; " \
+@@ -150,11 +156,7 @@
+ 		"fi;\0" \
+ 	"findfdt=" \
+ 		"if test $fdt_file = undefined; then " \
+-			"if gpio input 12; then " \
+-				"setenv fdt_file fsl-imx8mq-var-dart-cb12.dtb; " \
+-			"else " \
+-				"setenv fdt_file fsl-imx8mq-var-dart.dtb;" \
+-			"fi; " \
++				"setenv fdt_file fsl-imx8mq-var-dart.dtb; " \
+ 		"fi; \0" \
+ 	"loadfdt=run findfdt; " \
+ 		"echo fdt_file=${fdt_file}; " \

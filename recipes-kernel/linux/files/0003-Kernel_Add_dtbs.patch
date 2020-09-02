@@ -1,0 +1,1878 @@
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-a53.dtsi b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-a53.dtsi
+new file mode 100644
+index 0000000..fe97c9f
+--- /dev/null
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-a53.dtsi
+@@ -0,0 +1,143 @@
++/*
++ * Copyright 2017 NXP
++ * Copyright 2019 Variscite Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++
++/ {
++         reg_3p3v: 3p3v {
++                  compatible = "regulator-fixed";
++                  regulator-name = "3P3V";
++                  regulator-min-microvolt = <3300000>;
++                  regulator-max-microvolt = <3300000>;
++                  regulator-always-on;
++        };
++
++        reg_5p0v: 5p0v {
++                 compatible = "regulator-fixed";
++                 regulator-name = "5P0V";
++                 regulator-min-microvolt = <5000000>;
++                 regulator-max-microvolt = <5000000>;
++                 regulator-always-on;
++        };
++        can_osc: can_osc {
++                compatible = "fixed-clock";
++                #clock-cells = <0>;
++                clock-frequency = <20000000>;
++        };
++	leds {
++	        pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_leds>,<&pinctrl_aled>;
++		can_rst@0 {
++			label = "can_rst";
++			gpios = <&gpio4 25 GPIO_ACTIVE_LOW>;
++			default-state = "off";
++		};
++
++		can_term@0 {
++			label = "can_term-0";
++			gpios = <&gpio4 26 GPIO_ACTIVE_HIGH>;
++			default-state = "on";
++		};
++		can_term@1 {
++			label = "can_term-1";
++			gpios = <&gpio4 27 GPIO_ACTIVE_HIGH>;
++			default-state = "on";
++		};
++		vbat_out@0{
++			label = "ecu_wake";
++			gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
++			default-state = "off";
++		};
++	};
++
++};
++
++
++&iomuxc {
++        pinctrl-names = "default";
++
++        imx8mm-var-dart {
++
++                pinctrl_aled: ledagrp {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_SAI2_TXC_GPIO4_IO25                0xc6
++                                MX8MQ_IOMUXC_SAI2_TXD0_GPIO4_IO26               0xc6
++                                MX8MQ_IOMUXC_SAI2_MCLK_GPIO4_IO27               0xc6
++                              
++                                MX8MQ_IOMUXC_ENET_MDC_GPIO1_IO16                0xc6                       
++                        >;
++                };
++
++                pinctrl_aecspi1: ecspi1grp {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_ECSPI1_SCLK_ECSPI1_SCLK            0x13
++                                MX8MQ_IOMUXC_ECSPI1_MOSI_ECSPI1_MOSI            0x13
++                                MX8MQ_IOMUXC_ECSPI1_MISO_ECSPI1_MISO            0x13
++                                MX8MQ_IOMUXC_ECSPI1_SS0_GPIO5_IO9               0x13
++                                MX8MQ_IOMUXC_SAI1_RXFS_GPIO4_IO0                0x13
++                        >;
++                };
++
++                pinctrl_can0: cangrp0 {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_SAI2_RXD0_GPIO4_IO23               0x11
++                        >;
++                };
++
++                pinctrl_can1: cangrp1 {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_SAI2_TXFS_GPIO4_IO24               0x11
++                        >;
++                };
++	};
++};
++
++&ecspi1 {
++        pinctrl-names = "default";
++        #address-cells = <1>;
++        #size-cells = <0>;
++        pinctrl-0 = <&pinctrl_aecspi1>;
++        cs-gpios = <&gpio5  9 GPIO_ACTIVE_HIGH>,
++                   <&gpio4  0 GPIO_ACTIVE_HIGH>;
++        fsl,spi-num-chipselects = <2>;
++        status = "okay";
++        mcp251x@0 {
++                compatible = "microchip,mcp2515";
++                reg = <0>;
++                pinctrl-0 = <&pinctrl_can0>;
++                spi-max-frequency = <16000000>;
++                clocks = <&can_osc>;
++                interrupt-parent = <&gpio4>;
++                interrupts = <23 IRQ_TYPE_EDGE_FALLING>;
++                vdd-supply = <&reg_3p3v>;
++                xceiver-supply = <&reg_5p0v>;
++                wakeup-source;
++                status = "okay";
++        };
++
++        mcp251x@1 {
++                compatible = "microchip,mcp2515";
++                reg = <1>;
++                pinctrl-0 = <&pinctrl_can1>;
++                spi-max-frequency = <16000000>;
++                clocks = <&can_osc>;
++                interrupt-parent = <&gpio4>;
++                interrupts = <24 IRQ_TYPE_EDGE_FALLING>;
++                vdd-supply = <&reg_3p3v>;
++                xceiver-supply = <&reg_5p0v>;
++                wakeup-source;
++                status = "okay";
++        };
++};
++
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-cb12.dtsi b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-cb12.dtsi
+index 007cb10..2ff038a 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-cb12.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-cb12.dtsi
+@@ -1,3 +1,4 @@
++#if 0
+ &iomuxc {
+ 	imx8m-var-dart {
+ 		csi2grp {
+@@ -21,3 +22,4 @@
+ 		status = "disabled";
+ 	};
+ };
++#endif
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-common.dtsi b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-common.dtsi
+index d85db4a..bfe8ac3 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-common.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-common.dtsi
+@@ -47,12 +47,6 @@
+ 		};
+ 	};
+ 
+-	can0_osc: can0_osc {
+-		compatible = "fixed-clock";
+-		#clock-cells = <0>;
+-		clock-frequency = <20000000>;
+-	};
+-
+ 	sound-wm8904 {
+ 		compatible = "fsl,imx-audio-wm8904";
+ 		model = "imx-wm8904";
+@@ -66,7 +60,7 @@
+ 			"IN1L", "Mic Jack",
+ 			"Playback", "CPU-Playback",
+ 			"CPU-Capture", "Capture";
+-		status = "okay";
++		status = "disabled";
+ 	};
+ 
+ 	sound-hdmi {
+@@ -121,35 +115,84 @@
+ 		status = "disabled";
+ 	};
+ 
++	fan0: pwm-fan {
++		compatible = "pwm-fan";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_gpio_fan>;
++		pwms = <&pwm3 0 40000>;
++		#cooling-cells = <2>;
++		cooling-levels = <240 120 180 240>;
++		interrupt-parent = <&gpio3>;
++		interrupts = <25 IRQ_TYPE_EDGE_FALLING>;
++		pulses-per-revolution = <2>;
++		status = "okay";
++	};
++
+ 	gpio-keys {
+ 		compatible = "gpio-keys";
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&pinctrl_gpio_keys>;
+ 
+-		up {
+-			label = "Up";
+-			gpios = <&gpio4 18 GPIO_ACTIVE_LOW>;
+-			linux,code = <KEY_UP>;
+-		};
+-
+-		down {
+-			label = "Down";
+-			gpios = <&gpio4 15 GPIO_ACTIVE_LOW>;
+-			linux,code = <KEY_DOWN>;
++                acc {
++                        label = "in_acc";
++                        gpios = <&gpio4 20 GPIO_ACTIVE_HIGH>;
++                        linux,code = <98>;
++                };
++		gpi1 {
++			label = "in_ext1";
++			gpios = <&gpio3 5 GPIO_ACTIVE_HIGH>;
++			linux,code = <99>;
+ 		};
+-
+-		home {
+-			label = "Home";
+-			gpios = <&gpio4 13 GPIO_ACTIVE_LOW>;
+-			linux,code = <KEY_HOME>;
++                gpi2 {
++                        label = "in_ext2";
++                        gpios = <&gpio3 6 GPIO_ACTIVE_HIGH>;
++                        linux,code = <100>;
++                };
++                gpi3 {
++                       label = "in_int1";
++                       gpios = <&gpio3 7 GPIO_ACTIVE_LOW>;
++                       linux,code = <101>;
++                };
++                gpi4 {
++                       label = "in_int2";
++                       gpios = <&gpio3 8 GPIO_ACTIVE_LOW>;
++                       linux,code = <102>;
+ 		};
+-
+-		back {
+-			label = "Back";
+-			gpios = <&gpio4 6 GPIO_ACTIVE_LOW>;
+-			linux,code = <KEY_BACK>;
+-		};
+-	};
++                gps_pps {
++                      label = "gps_pps";
++                       gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
++                       linux,code = <103>;
++                };
++                vbat_fb1 {
++                       label = "out_fb";
++                       gpios = <&gpio3 22 GPIO_ACTIVE_HIGH>;
++                       linux,code = <104>;
++                };
++                vbat_fb2 {
++                       label = "wake_fb";
++                       gpios = <&gpio3 23 GPIO_ACTIVE_HIGH>;
++                       linux,code = <105>;
++                };
++                vbat_fb3 {
++                       label = "tel_fb";
++                       gpios = <&gpio3 20 GPIO_ACTIVE_HIGH>;
++                       linux,code = <106>;
++                };
++                vbat_fb4 {
++                       label = "cam_fb";
++                       gpios = <&gpio3 21 GPIO_ACTIVE_HIGH>;
++                       linux,code = <107>;
++                };
++        };
++
++        leds_pwm {
++                compatible = "pwm-leds";
++                vbat_out{
++                        label = "pwr_out";
++                        pwms = <&pwm4 0 100000>;
++                        max-brightness = <255>;
++                };
++        };
+ 
+ 	leds {
+ 		compatible = "gpio-leds";
+@@ -161,6 +204,36 @@
+ 			gpios = <&gpio4 17 GPIO_ACTIVE_HIGH>;
+ 			linux,default-trigger = "mmc0";
+ 		};
++	        blower_en@0{
++                        label = "blower_en";
++                        gpios = <&gpio3 11 GPIO_ACTIVE_HIGH>;
++                        default-state = "on";
++		};
++		gps_en@0{
++                        label = "gps_en";
++                        gpios = <&gpio4 11 GPIO_ACTIVE_HIGH>;
++                        default-state = "on";
++		};
++                vbat_out@1{
++                        label = "pwr_tel";
++                        gpios = <&gpio4 1 GPIO_ACTIVE_HIGH>;
++                        default-state = "off";
++                };
++                vbat_out@2{
++                        label = "pwr_cam";
++                        gpios = <&gpio4 21 GPIO_ACTIVE_HIGH>;
++                        default-state = "off";
++               };
++                gps_rst@0 {
++                        label = "gps_rst";
++                        gpios = <&gpio4 10 GPIO_ACTIVE_LOW>;
++                        default-state = "off";
++                };
++		lcd_pwr@0 {
++			label = "lcd_pwr";
++			gpios = <&gpio3 9 GPIO_ACTIVE_HIGH>;
++			default-state = "on";
++		};
+ 	};
+ };
+ 
+@@ -400,37 +473,78 @@
+ 			>;
+ 		};
+ 
+-		pinctrl_captouch: captouchgrp {
+-			fsl,pins = <
+-				MX8MQ_IOMUXC_SAI1_RXD3_GPIO4_IO5 		0x16
+-				MX8MQ_IOMUXC_GPIO1_IO14_GPIO1_IO14		0x16
+-			>;
+-		};
++               pinctrl_pwm2: pwm2grp {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_SPDIF_RX_PWM2_OUT                0x06
++                        >;
++                };
++
++                pinctrl_pwm3: pwm3grp {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_SPDIF_TX_PWM3_OUT                0x06
++                        >;
++                };
++
++                pinctrl_pwm4: pwm4grp {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_GPIO1_IO15_PWM4_OUT              0x06
++                        >;
++                };
++
++                pinctrl_gpio_fan: fangrp {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_SAI5_MCLK_GPIO3_IO25               0xc6
++                        >;
++                };
++
++                pinctrl_captouch: captouchgrp {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_SAI5_RXFS_GPIO3_IO19               0xc6
++                                MX8MQ_IOMUXC_GPIO1_IO14_GPIO1_IO14              0xc6
++                        >;
++                };
+ 
+ 		pinctrl_rtc: rtcgrp {
+ 			fsl,pins = <
+-				MX8MQ_IOMUXC_GPIO1_IO15_GPIO1_IO15 		0xc1
++				MX8MQ_IOMUXC_SAI5_RXD3_GPIO3_IO24 		0xc1
+ 			>;
+ 		};
+ 
+ 		pinctrl_gpio_keys: keygrp {
+ 			fsl,pins = <
+-				MX8MQ_IOMUXC_SAI1_TXD3_GPIO4_IO15		0xc6
+-				MX8MQ_IOMUXC_SAI1_TXD6_GPIO4_IO18		0xc6
+-				MX8MQ_IOMUXC_SAI1_TXD1_GPIO4_IO13		0xc6
+-				MX8MQ_IOMUXC_SAI1_RXD4_GPIO4_IO6		0xc6
++                                MX8MQ_IOMUXC_SAI1_MCLK_GPIO4_IO20               0xc6
++                                MX8MQ_IOMUXC_NAND_CLE_GPIO3_IO5                 0xc6
++                                MX8MQ_IOMUXC_NAND_DATA00_GPIO3_IO6              0xc6
++                                MX8MQ_IOMUXC_NAND_DATA01_GPIO3_IO7              0xc6
++                                MX8MQ_IOMUXC_NAND_DATA02_GPIO3_IO8              0xc6
++                                MX8MQ_IOMUXC_SAI2_RXC_GPIO4_IO22                0x19
++                                MX8MQ_IOMUXC_SAI5_RXC_GPIO3_IO20                0xc6
++                                MX8MQ_IOMUXC_SAI5_RXD0_GPIO3_IO21               0xc6
++                                MX8MQ_IOMUXC_SAI5_RXD1_GPIO3_IO22               0xc6
++                                MX8MQ_IOMUXC_SAI5_RXD2_GPIO3_IO23               0xc6
+ 			>;
+ 		};
+ 
+ 		pinctrl_leds: ledgrp {
+ 			fsl,pins = <
+-				MX8MQ_IOMUXC_SAI1_RXD1_GPIO4_IO3		0xc6
+-				MX8MQ_IOMUXC_SAI1_TXD2_GPIO4_IO14		0xc6
+-				MX8MQ_IOMUXC_SAI1_RXD2_GPIO4_IO4		0xc6
+-				MX8MQ_IOMUXC_SAI1_TXD5_GPIO4_IO17		0xc6
++                                MX8MQ_IOMUXC_SAI1_TXD5_GPIO4_IO17               0xc6
++                                MX8MQ_IOMUXC_NAND_DATA05_GPIO3_IO11             0x41
++                                MX8MQ_IOMUXC_SAI1_TXC_GPIO4_IO11                0x16
++                                MX8MQ_IOMUXC_SAI1_RXC_GPIO4_IO1                 0xc6
++                                MX8MQ_IOMUXC_SAI2_RXFS_GPIO4_IO21               0xc6
++                                MX8MQ_IOMUXC_SAI1_TXFS_GPIO4_IO10               0xc6
++                                MX8MQ_IOMUXC_NAND_DATA03_GPIO3_IO9              0xc1
++                                MX8MQ_IOMUXC_ENET_MDC_GPIO1_IO16                0xc6
+ 			>;
+ 		};
+ 
++                pinctrl_mipi_csi0: mipicsi0grp {
++                        fsl,pins = <
++                                MX8MQ_IOMUXC_NAND_ALE_GPIO3_IO0                 0x19
++                                MX8MQ_IOMUXC_NAND_CE0_B_GPIO3_IO1               0x19
++                        >;
++                };
++
+ 		pinctrl_wifi: wifigrp {
+ 			fsl,pins = <
+ 				MX8MQ_IOMUXC_GPIO1_IO04_GPIO1_IO4		0xc1	/* WIFI_PWR_VSEL */
+@@ -458,18 +572,6 @@
+ 			>;
+ 		};
+ 
+-		pinctrl_can: cangrp {
+-			fsl,pins = <
+-				MX8MQ_IOMUXC_GPIO1_IO06_GPIO1_IO6		0x16
+-			>;
+-		};
+-
+-		pinctrl_restouch: restouchgrp {
+-			fsl,pins = <
+-				MX8MQ_IOMUXC_GPIO1_IO03_GPIO1_IO3		0xc0
+-			>;
+-		};
+-
+ 		pinctrl_typec: typecgrp {
+ 			fsl,pins = <
+ 				MX8MQ_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x16
+@@ -494,7 +596,7 @@
+ 	phy-mode = "rgmii";
+ 	phy-handle = <&ethphy0>;
+ 	fsl,magic-packet;
+-	status = "okay";
++	status = "disabled";
+ 	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+ 	phy-reset-duration = <10>;
+ 
+@@ -617,39 +719,39 @@
+ 			0xffff /* GPIO3 => don't touch */
+ 			0xffff /* GPIO4 => don't touch */
+ 		>;
+-		status = "okay";
++		status = "disabled";
+ 	};
+ 
+ 	dsi_lvds_bridge: sn65dsi84@2c {
+-		compatible = "ti,sn65dsi83";
+-		reg = <0x2c>;
+-		ti,dsi-lanes = <4>;
+-		ti,lvds-format = <1>;
+-		ti,lvds-bpp = <24>;
+-		ti,width-mm = <154>;
+-		ti,height-mm = <87>;
+-		enable-gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_lvds>;
+-		status = "disabled";
+-
+-		display-timings {
+-			lvds {
+-				clock-frequency = <33000000>;
+-				hactive = <800>;
+-				vactive = <480>;
+-				hback-porch = <40>;
+-				hfront-porch = <40>;
+-				vback-porch = <29>;
+-				vfront-porch = <13>;
+-				hsync-len = <48>;
+-				vsync-len = <3>;
+-				hsync-active = <0>;
+-				vsync-active = <0>;
+-				de-active = <1>;
+-				pixelclk-active = <0>;
+-			};
+-		};
++                compatible = "ti,sn65dsi83";
++                reg = <0x2c>;
++                ti,dsi-lanes = <4>;
++                ti,lvds-format = <2>;
++                ti,lvds-bpp = <24>;
++                ti,width-mm = <217>;
++                ti,height-mm = <136>;
++                enable-gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;
++                pinctrl-names = "default";
++                pinctrl-0 = <&pinctrl_lvds>;
++                status = "disabled";
++
++                display-timings {
++                        lvds {
++                                clock-frequency = <66000000>;
++                                hactive = <1280>;
++                                vactive = <800>;
++                                hback-porch = <200>;
++                                hfront-porch = <64>;
++                                vback-porch = <24>;
++                                vfront-porch = <1>;
++                                hsync-len = <136>;
++                                vsync-len = <3>;
++                                hsync-active = <0>;
++                                vsync-active = <0>;
++                                de-active = <1>;
++                                pixelclk-active = <0>;
++                        };
++                };
+ 
+ 		port {
+ 			dsi_lvds_bridge_in: endpoint {
+@@ -676,43 +778,20 @@
+ 	pinctrl-0 = <&pinctrl_i2c2>;
+ 	status = "okay";
+ 
+-	/* DS1337 RTC module */
+-	rtc@0x68 {
+-		status = "okay";
+-		compatible = "dallas,ds1337";
+-		reg = <0x68>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_rtc>;
+-		interrupt-parent = <&gpio1>;
+-		interrupts = <15 IRQ_TYPE_EDGE_FALLING>;
+-	};
+-
+-	/* Capacitive touch controller */
+-	ft5x06_ts: ft5x06_ts@38 {
+-		status = "disabled";
+-		compatible = "edt,edt-ft5x06";
+-		reg = <0x38>;
+-		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_captouch>;
+-		interrupt-parent = <&gpio1>;
+-		interrupts = <14 0>;
+-		touchscreen-size-x = <800>;
+-		touchscreen-size-y = <480>;
+-		touchscreen-inverted-x;
+-		touchscreen-inverted-y;
+-	};
+-
+-	/* USB-C controller */
+-	typec_ptn5150: typec@3d {
+-		status = "okay";
+-		compatible = "nxp,ptn5150";
+-		reg = <0x3d>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_typec>;
+-		connect-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+-	};
+-
++	gt928_ts:gt928_ts@5d {
++                compatible = "goodix,gt928";
++                reg = <0x5d>;
++                reset-gpios = <&gpio3 19 GPIO_ACTIVE_LOW>;
++                pinctrl-names = "default";
++                pinctrl-0 = <&pinctrl_captouch>;
++                interrupt-parent = <&gpio1>;
++                interrupts = <14 0>;
++                irq-gpios = <&gpio1 14 0>;
++                touchscreen-size-x = <1240>;
++                touchscreen-size-y = <800>;
++                status = "okay";
++        };
++#if 0
+ 	ov5640_mipi1: ov5640_mipi1@3c {
+ 		status = "okay";
+ 		compatible = "ovti,ov5640_mipi";
+@@ -740,6 +819,7 @@
+ 			};
+ 		};
+ 	};
++#endif
+ };
+ 
+ &i2c3 {
+@@ -755,6 +835,31 @@
+ 	pinctrl-0 = <&pinctrl_i2c4>;
+ 	status = "okay";
+ 
++       /* DS1337 RTC module */
++        rtc@0x68 {
++                status = "okay";
++                compatible = "dallas,ds1337";
++                reg = <0x68>;
++                pinctrl-names = "default";
++                pinctrl-0 = <&pinctrl_rtc>;
++                interrupt-parent = <&gpio3>;
++                interrupts = <24 IRQ_TYPE_EDGE_FALLING>;
++        };
++
++         tla2024: ads1015@48 {
++                compatible = "ti,ads1015";
++                status = "okay";
++                reg = <0x48>;
++                #address-cells = <1>;
++                #size-cells = <0>;
++                //ADC0 TO GND
++                channel@4 {
++                        reg = <4>;
++                        ti,gain = <2>;
++                        ti,datarate = <4>;
++                };
++        };
++#if 0
+ 	ov5640_mipi2: ov5640_mipi2@3c {
+ 		status = "okay";
+ 		compatible = "ovti,ov5640_mipi";
+@@ -783,6 +888,7 @@
+ 			};
+ 		};
+ 	};
++#endif
+ };
+ 
+ &pcie0 {
+@@ -790,7 +896,7 @@
+ 	pinctrl-0 = <&pinctrl_pcie0>;
+ 	reset-gpio = <&gpio4 7 GPIO_ACTIVE_LOW>;
+ 	ext_osc = <1>;
+-	status = "okay";
++	status = "disabled";
+ };
+ 
+ &pcie1 {
+@@ -835,7 +941,7 @@
+ 	assigned-clocks = <&clk IMX8MQ_CLK_UART4>;
+ 	assigned-clock-parents = <&clk IMX8MQ_SYS1_PLL_80M>;
+ 	fsl,uart-has-rtscts;
+-	status = "disabled";
++	status = "okay";
+ };
+ 
+ /* eMMC */
+@@ -859,20 +965,19 @@
+ */
+ &usb_dwc3_0 {
+ 	status = "okay";
+-	extcon = <&typec_ptn5150>;
+-	dr_mode = "otg";
++	dr_mode = "host";
+ };
+ 
+ &usb3_phy1 {
+-	status = "okay";
++	status = "disabled";
+ };
+ /*
+ &usb3_1 {
+-	status = "okay";
++	status = "disabled";
+ };
+ */
+ &usb_dwc3_1 {
+-	status = "okay";
++	status = "disabled";
+ 	dr_mode = "host";
+ };
+ 
+@@ -882,7 +987,7 @@
+ 	assigned-clocks = <&clk IMX8MQ_CLK_SAI3>;
+ 	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
+ 	assigned-clock-rates = <1536000>;
+-	status = "okay";
++	status = "disabled";
+ };
+ 
+ &sai4 {
+@@ -948,7 +1053,7 @@
+ 	/delete-node/ linux,cma;
+ 
+ 	/delete-node/ rpmsg@b8000000;
+-	rpmsg_reserved: rpmsg@0x40000000 {
++	rpmsg_reserved: rpmsg@40000000 {
+ 		no-map;
+ 		reg = <0 0x40000000 0 0x400000>;
+ 	};
+@@ -980,7 +1085,7 @@
+ &csi2_bridge {
+ 	fsl,mipi-mode;
+ 	fsl,two-8bit-sensor-mode;
+-	status = "okay";
++	status = "disabled";
+ 
+ 	port {
+ 		csi2_ep: endpoint {
+@@ -994,10 +1099,10 @@
+ 	#size-cells = <0>;
+ 	status = "okay";
+ 	port {
+-		mipi1_sensor_ep: endpoint@0 {
+-			remote-endpoint = <&ov5640_mipi1_ep>;
+-			data-lanes = <1 2>;
+-		};
++//		mipi1_sensor_ep: endpoint@0 {
++//			remote-endpoint = <&ov5640_mipi1_ep>;
++//			data-lanes = <1 2>;
++//		};
+ 
+ 		csi1_mipi_ep: endpoint@1 {
+ 			remote-endpoint = <&csi1_ep>;
+@@ -1008,12 +1113,12 @@
+ &mipi_csi_2 {
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+-	status = "okay";
++	status = "disabled";
+ 	port {
+-		mipi2_sensor_ep: endpoint@0 {
+-			remote-endpoint = <&ov5640_mipi2_ep>;
+-			data-lanes = <1 2>;
+-		};
++//		mipi2_sensor_ep: endpoint@0 {
++//			remote-endpoint = <&ov5640_mipi2_ep>;
++//			data-lanes = <1 2>;
++//		};
+ 
+ 		csi2_mipi_ep: endpoint@1 {
+ 			remote-endpoint = <&csi2_ep>;
+@@ -1033,54 +1138,34 @@
+ 
+ &ecspi1 {
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_ecspi1>;
+-	cs-gpios = <&gpio5  9 GPIO_ACTIVE_HIGH>,
+-		   <&gpio1 12 GPIO_ACTIVE_HIGH>;
+-	fsl,spi-num-chipselects = <2>;
+-	status = "okay";
+-
+-	/* Resistive touch controller */
+-	ads7846@0 {
+-		reg = <0>;
+-		compatible = "ti,ads7846";
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_restouch>;
+-		interrupt-parent = <&gpio1>;
+-		interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
+-		spi-max-frequency = <1500000>;
+-		pendown-gpio = <&gpio1 3 GPIO_ACTIVE_LOW>;
+-		ti,x-min = /bits/ 16 <125>;
+-		ti,x-max = /bits/ 16 <4008>;
+-		ti,y-min = /bits/ 16 <282>;
+-		ti,y-max = /bits/ 16 <3864>;
+-		ti,x-plate-ohms = /bits/ 16 <180>;
+-		ti,pressure-max = /bits/ 16 <255>;
+-		ti,debounce-max = /bits/ 16 <10>;
+-		ti,debounce-tol = /bits/ 16 <3>;
+-		ti,debounce-rep = /bits/ 16 <1>;
+-		ti,settle-delay-usec = /bits/ 16 <150>;
+-		ti,keep-vref-on;
+-		wakeup-source;
+-		status = "disabled";
+-	};
+-
+-	can0: can@1 {
+-		compatible = "microchip,mcp2517fd";
+-		reg = <1>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_can>;
+-		clocks = <&can0_osc>;
+-		interrupt-parent = <&gpio1>;
+-		interrupts = <6 IRQ_TYPE_EDGE_FALLING>;
+-		spi-max-frequency = <20000000>;
+-		status = "okay";
+-	};
++        #address-cells = <1>;
++        #size-cells = <0>;
++        pinctrl-0 = <&pinctrl_ecspi1>;
++        status = "disabled";
+ };
+ 
+ &pwm1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_pwm1>;
+-	status = "disabled";
++	status = "okay";
++};
++
++&pwm2 {
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_pwm2>;
++        status = "okay";
++};
++
++&pwm3 {
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_pwm3>;
++        status = "okay";
++};
++
++&pwm4 {
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_pwm4>;
++        status = "okay";
+ };
+ 
+ &snvs_rtc {
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-lvds-dcss.dtsi b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-lvds-dcss.dtsi
+index f428fe3..e8139d9 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-lvds-dcss.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-lvds-dcss.dtsi
+@@ -85,6 +85,6 @@
+ 	status = "okay";
+ };
+ 
+-&ft5x06_ts {
+-	status = "okay";
++&gt928_ts {
++        status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-lvds-lcdif.dtsi b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-lvds-lcdif.dtsi
+index a35d419..b050ff7 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-lvds-lcdif.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-lvds-lcdif.dtsi
+@@ -65,6 +65,6 @@
+ 	};
+ };
+ 
+-&ft5x06_ts {
+-	status = "okay";
++&gt928_ts {
++        status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-dp.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-dp.dts
+index fcd7475..405307a 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-dp.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-dp.dts
+@@ -13,5 +13,12 @@
+  * GNU General Public License for more details.
+  */
+ 
+-#include "fsl-imx8mq-var-dart-sd-dp.dts"
++#include "fsl-imx8mq-var-dart-common.dtsi"
++#include "fsl-imx8mq-var-dart-sd.dtsi"
++#include "fsl-imx8mq-var-dart-dp.dtsi"
+ #include "fsl-imx8mq-var-dart-m4.dtsi"
++
++/ {
++        model = "Variscite DART-MX8M SD+DP";
++};
++
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-hdmi.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-hdmi.dts
+index 4427fa2..09ea6c9 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-hdmi.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-hdmi.dts
+@@ -13,5 +13,11 @@
+  * GNU General Public License for more details.
+  */
+ 
+-#include "fsl-imx8mq-var-dart-sd-hdmi.dts"
++#include "fsl-imx8mq-var-dart-common.dtsi"
++#include "fsl-imx8mq-var-dart-sd.dtsi"
++#include "fsl-imx8mq-var-dart-hdmi.dtsi"
+ #include "fsl-imx8mq-var-dart-m4.dtsi"
++
++/ {
++        model = "Variscite DART-MX8M SD+HDMI";
++};
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-lvds.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-lvds.dts
+index 1698f529..2ba1d58 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-lvds.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-sd-lvds.dts
+@@ -13,5 +13,11 @@
+  * GNU General Public License for more details.
+  */
+ 
+-#include "fsl-imx8mq-var-dart-sd-lvds.dts"
++#include "fsl-imx8mq-var-dart-common.dtsi"
++#include "fsl-imx8mq-var-dart-sd.dtsi"
++#include "fsl-imx8mq-var-dart-lvds-dcss.dtsi"
+ #include "fsl-imx8mq-var-dart-m4.dtsi"
++
++/ {
++        model = "Variscite DART-MX8M SD+LVDS";
++};
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-dp.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-dp.dts
+index 84c2849..d0b7662 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-dp.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-dp.dts
+@@ -13,5 +13,11 @@
+  * GNU General Public License for more details.
+  */
+ 
+-#include "fsl-imx8mq-var-dart-wifi-dp.dts"
++#include "fsl-imx8mq-var-dart-common.dtsi"
++#include "fsl-imx8mq-var-dart-wifi.dtsi"
++#include "fsl-imx8mq-var-dart-dp.dtsi"
+ #include "fsl-imx8mq-var-dart-m4.dtsi"
++
++/ {
++        model = "Variscite DART-MX8M WIFI+DP";
++};
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-hdmi.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-hdmi.dts
+index 360346d..2b0dc91 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-hdmi.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-hdmi.dts
+@@ -13,5 +13,11 @@
+  * GNU General Public License for more details.
+  */
+ 
+-#include "fsl-imx8mq-var-dart-wifi-hdmi.dts"
++#include "fsl-imx8mq-var-dart-common.dtsi"
++#include "fsl-imx8mq-var-dart-wifi.dtsi"
++#include "fsl-imx8mq-var-dart-hdmi.dtsi"
+ #include "fsl-imx8mq-var-dart-m4.dtsi"
++
++/ {
++        model = "Variscite DART-MX8M WIFI+HDMI";
++};
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-lvds.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-lvds.dts
+index 336c95c..d6430bc 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-lvds.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4-wifi-lvds.dts
+@@ -13,5 +13,11 @@
+  * GNU General Public License for more details.
+  */
+ 
+-#include "fsl-imx8mq-var-dart-wifi-lvds.dts"
++#include "fsl-imx8mq-var-dart-common.dtsi"
++#include "fsl-imx8mq-var-dart-wifi.dtsi"
++#include "fsl-imx8mq-var-dart-lvds-dcss.dtsi"
+ #include "fsl-imx8mq-var-dart-m4.dtsi"
++
++/ {
++        model = "Variscite DART-MX8M WIFI+LVDS";
++};
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4.dtsi b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4.dtsi
+index 06fc446..e4e4ac5 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-m4.dtsi
+@@ -35,9 +35,9 @@
+ 	status = "disabled";
+ };
+ 
+-&pwm2 {
+-	status = "disabled";
+-};
++//&pwm2 {
++//	status = "disabled";
++//};
+ 
+ &rpmsg{
+ 	/*
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-dp.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-dp.dts
+index beed841..ad11dc5 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-dp.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-dp.dts
+@@ -16,6 +16,7 @@
+ #include "fsl-imx8mq-var-dart-common.dtsi"
+ #include "fsl-imx8mq-var-dart-sd.dtsi"
+ #include "fsl-imx8mq-var-dart-dp.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M SD+DP";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-hdmi.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-hdmi.dts
+index c40ae26..daec31b 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-hdmi.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-hdmi.dts
+@@ -16,6 +16,7 @@
+ #include "fsl-imx8mq-var-dart-common.dtsi"
+ #include "fsl-imx8mq-var-dart-sd.dtsi"
+ #include "fsl-imx8mq-var-dart-hdmi.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M SD+HDMI";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds-dp.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds-dp.dts
+index 232cb4d6..fbad774 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds-dp.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds-dp.dts
+@@ -17,6 +17,7 @@
+ #include "fsl-imx8mq-var-dart-sd.dtsi"
+ #include "fsl-imx8mq-var-dart-lvds-lcdif.dtsi"
+ #include "fsl-imx8mq-var-dart-dp.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M SD+LVDS+DP";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds-hdmi.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds-hdmi.dts
+index 75efa5f..514eaf6 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds-hdmi.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds-hdmi.dts
+@@ -17,6 +17,7 @@
+ #include "fsl-imx8mq-var-dart-sd.dtsi"
+ #include "fsl-imx8mq-var-dart-hdmi.dtsi"
+ #include "fsl-imx8mq-var-dart-lvds-lcdif.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M SD+LVDS+HDMI";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds.dts
+index 7727471..b0ccddf 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-sd-lvds.dts
+@@ -16,6 +16,7 @@
+ #include "fsl-imx8mq-var-dart-common.dtsi"
+ #include "fsl-imx8mq-var-dart-sd.dtsi"
+ #include "fsl-imx8mq-var-dart-lvds-dcss.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M SD+LVDS";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-dp.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-dp.dts
+index 750d80f..c5db0bc 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-dp.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-dp.dts
+@@ -16,6 +16,7 @@
+ #include "fsl-imx8mq-var-dart-common.dtsi"
+ #include "fsl-imx8mq-var-dart-wifi.dtsi"
+ #include "fsl-imx8mq-var-dart-dp.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M WIFI+DP";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-hdmi.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-hdmi.dts
+index 9685e64..6df5b9b 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-hdmi.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-hdmi.dts
+@@ -16,6 +16,7 @@
+ #include "fsl-imx8mq-var-dart-common.dtsi"
+ #include "fsl-imx8mq-var-dart-wifi.dtsi"
+ #include "fsl-imx8mq-var-dart-hdmi.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M WIFI+HDMI";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds-dp.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds-dp.dts
+index 9481595..dd208a4 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds-dp.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds-dp.dts
+@@ -17,6 +17,7 @@
+ #include "fsl-imx8mq-var-dart-wifi.dtsi"
+ #include "fsl-imx8mq-var-dart-lvds-lcdif.dtsi"
+ #include "fsl-imx8mq-var-dart-dp.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M WIFI+LVDS+DP";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds-hdmi.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds-hdmi.dts
+index 01014a3..2ea0d3d 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds-hdmi.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds-hdmi.dts
+@@ -17,6 +17,7 @@
+ #include "fsl-imx8mq-var-dart-wifi.dtsi"
+ #include "fsl-imx8mq-var-dart-lvds-lcdif.dtsi"
+ #include "fsl-imx8mq-var-dart-hdmi.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M WIFI+LVDS+HDMI";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds.dts
+index 8e2df3f..6106024 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-imx8mq-var-dart-wifi-lvds.dts
+@@ -16,6 +16,7 @@
+ #include "fsl-imx8mq-var-dart-common.dtsi"
+ #include "fsl-imx8mq-var-dart-wifi.dtsi"
+ #include "fsl-imx8mq-var-dart-lvds-dcss.dtsi"
++#include "fsl-imx8mq-var-dart-a53.dtsi"
+ 
+ / {
+ 	model = "Variscite DART-MX8M WIFI+LVDS";
+diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+index 9d611dd..b248f22 100644
+--- a/drivers/hwmon/pwm-fan.c
++++ b/drivers/hwmon/pwm-fan.c
+@@ -18,6 +18,7 @@
+ 
+ #include <linux/hwmon.h>
+ #include <linux/hwmon-sysfs.h>
++#include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/of.h>
+@@ -25,12 +26,19 @@
+ #include <linux/pwm.h>
+ #include <linux/sysfs.h>
+ #include <linux/thermal.h>
++#include <linux/timer.h>
+ 
+ #define MAX_PWM 255
+ 
+ struct pwm_fan_ctx {
+ 	struct mutex lock;
+ 	struct pwm_device *pwm;
++	int irq;
++	atomic_t pulses;
++	unsigned int rpm;
++	u8 pulses_per_revolution;
++	ktime_t sample_start;
++	struct timer_list rpm_timer;
+ 	unsigned int pwm_value;
+ 	unsigned int pwm_fan_state;
+ 	unsigned int pwm_fan_max_state;
+@@ -38,6 +46,32 @@ struct pwm_fan_ctx {
+ 	struct thermal_cooling_device *cdev;
+ };
+ 
++/* This handler assumes self resetting edge triggered interrupt. */
++static irqreturn_t pulse_handler(int irq, void *dev_id)
++{
++	struct pwm_fan_ctx *ctx = dev_id;
++
++	atomic_inc(&ctx->pulses);
++
++	return IRQ_HANDLED;
++}
++
++static void sample_timer(struct timer_list *t)
++{
++	struct pwm_fan_ctx *ctx = from_timer(ctx, t, rpm_timer);
++	int pulses;
++	u64 tmp;
++
++	pulses = atomic_read(&ctx->pulses);
++	atomic_sub(pulses, &ctx->pulses);
++	tmp = (u64)pulses * ktime_ms_delta(ktime_get(), ctx->sample_start) * 60;
++	do_div(tmp, ctx->pulses_per_revolution * 1000);
++	ctx->rpm = tmp;
++
++	ctx->sample_start = ktime_get();
++	mod_timer(&ctx->rpm_timer, jiffies + HZ);
++}
++
+ static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+ {
+ 	unsigned long period;
+@@ -98,15 +132,44 @@ static ssize_t show_pwm(struct device *dev,
+ 	return sprintf(buf, "%u\n", ctx->pwm_value);
+ }
+ 
++static ssize_t rpm_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%u\n", ctx->rpm);
++}
+ 
+ static SENSOR_DEVICE_ATTR(pwm1, S_IRUGO | S_IWUSR, show_pwm, set_pwm, 0);
++static SENSOR_DEVICE_ATTR(fan1_input, S_IRUGO, rpm_show, NULL, 0);
+ 
+ static struct attribute *pwm_fan_attrs[] = {
+ 	&sensor_dev_attr_pwm1.dev_attr.attr,
+ 	NULL,
+ };
+ 
+-ATTRIBUTE_GROUPS(pwm_fan);
++static umode_t pwm_fan_attrs_visible(struct kobject *kobj, struct attribute *a,
++				     int n)
++{
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
++
++	/* Hide fan_input in case no interrupt is available  */
++	if (n == 1 && ctx->irq <= 0)
++		return 0;
++
++	return a->mode;
++}
++
++static const struct attribute_group pwm_fan_group = {
++	.attrs = pwm_fan_attrs,
++	.is_visible = pwm_fan_attrs_visible,
++};
++
++static const struct attribute_group *pwm_fan_groups[] = {
++	&pwm_fan_group,
++	NULL,
++};
+ 
+ /* thermal cooling device callbacks */
+ static int pwm_fan_get_max_state(struct thermal_cooling_device *cdev,
+@@ -212,6 +275,7 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 	struct device *hwmon;
+ 	int ret;
+ 	struct pwm_state state = { };
++	u32 ppr = 2;
+ 
+ 	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
+ 	if (!ctx)
+@@ -227,6 +291,10 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, ctx);
+ 
++	ctx->irq = platform_get_irq(pdev, 0);
++	if (ctx->irq == -EPROBE_DEFER)
++		return ctx->irq;
++
+ 	ctx->pwm_value = MAX_PWM;
+ 
+ 	/* Set duty cycle to maximum allowed and enable PWM output */
+@@ -240,17 +308,38 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	timer_setup(&ctx->rpm_timer, sample_timer, 0);
++
++	of_property_read_u32(pdev->dev.of_node, "pulses-per-revolution", &ppr);
++	ctx->pulses_per_revolution = ppr;
++	if (!ctx->pulses_per_revolution) {
++		dev_err(&pdev->dev, "pulses-per-revolution can't be zero.\n");
++		ret = -EINVAL;
++		goto err_pwm_disable;
++	}
++
++	if (ctx->irq > 0) {
++		ret = devm_request_irq(&pdev->dev, ctx->irq, pulse_handler, 0,
++				       pdev->name, ctx);
++		if (ret) {
++			dev_err(&pdev->dev, "Can't get interrupt working.\n");
++			goto err_pwm_disable;
++		}
++		ctx->sample_start = ktime_get();
++		mod_timer(&ctx->rpm_timer, jiffies + HZ);
++	}
++
+ 	hwmon = devm_hwmon_device_register_with_groups(&pdev->dev, "pwmfan",
+ 						       ctx, pwm_fan_groups);
+ 	if (IS_ERR(hwmon)) {
+ 		dev_err(&pdev->dev, "Failed to register hwmon device\n");
+ 		ret = PTR_ERR(hwmon);
+-		goto err_pwm_disable;
++		goto err_del_timer;
+ 	}
+ 
+ 	ret = pwm_fan_of_get_cooling_data(&pdev->dev, ctx);
+ 	if (ret)
+-		return ret;
++		goto err_del_timer;
+ 
+ 	ctx->pwm_fan_state = ctx->pwm_fan_max_state;
+ 	if (IS_ENABLED(CONFIG_THERMAL)) {
+@@ -261,7 +350,7 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 			dev_err(&pdev->dev,
+ 				"Failed to register pwm-fan as cooling device");
+ 			ret = PTR_ERR(cdev);
+-			goto err_pwm_disable;
++			goto err_del_timer;
+ 		}
+ 		ctx->cdev = cdev;
+ 		thermal_cdev_update(cdev);
+@@ -269,6 +358,9 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_del_timer:
++	del_timer_sync(&ctx->rpm_timer);
++
+ err_pwm_disable:
+ 	state.enabled = false;
+ 	pwm_apply_state(ctx->pwm, &state);
+@@ -281,6 +373,7 @@ static int pwm_fan_remove(struct platform_device *pdev)
+ 	struct pwm_fan_ctx *ctx = platform_get_drvdata(pdev);
+ 
+ 	thermal_cooling_device_unregister(ctx->cdev);
++	del_timer_sync(&ctx->rpm_timer);
+ 	if (ctx->pwm_value)
+ 		pwm_disable(ctx->pwm);
+ 	return 0;
+diff --git a/drivers/rpmsg/Kconfig b/drivers/rpmsg/Kconfig
+index 9cae004..4970455 100644
+--- a/drivers/rpmsg/Kconfig
++++ b/drivers/rpmsg/Kconfig
+@@ -70,4 +70,11 @@ config IMX_RPMSG_TTY
+ 	default m
+ 	depends on RPMSG && m
+ 
++config RPMSG_CAN
++        tristate "Custom driver to interface RPMSG througth SocketCAN"
++	default m
++        depends on RPMSG && CAN_DEV && m
++	
++        ---help---
++          Driver for interface RPMSG througth SocketCAN.
+ endmenu
+diff --git a/drivers/rpmsg/Makefile b/drivers/rpmsg/Makefile
+index 3a1f0e9..b3391e6 100644
+--- a/drivers/rpmsg/Makefile
++++ b/drivers/rpmsg/Makefile
+@@ -9,3 +9,4 @@ obj-$(CONFIG_RPMSG_VIRTIO)	+= virtio_rpmsg_bus.o
+ obj-$(CONFIG_HAVE_IMX_RPMSG)	+= imx_rpmsg.o
+ obj-$(CONFIG_IMX_RPMSG_PINGPONG)	+= imx_rpmsg_pingpong.o
+ obj-$(CONFIG_IMX_RPMSG_TTY)	+= imx_rpmsg_tty.o
++obj-$(CONFIG_RPMSG_CAN)     += rpmsg_can.o
+diff --git a/drivers/rpmsg/imx_rpmsg_tty.c b/drivers/rpmsg/imx_rpmsg_tty.c
+index 6d9e44e..8e073f3 100644
+--- a/drivers/rpmsg/imx_rpmsg_tty.c
++++ b/drivers/rpmsg/imx_rpmsg_tty.c
+@@ -24,7 +24,9 @@
+ 
+ /* this needs to be less then (RPMSG_BUF_SIZE - sizeof(struct rpmsg_hdr)) */
+ #define RPMSG_MAX_SIZE		256
+-#define MSG		"hello world!"
++#define D_RP_STA                0x55
++#define D_RP_DRV_ID             0xA4
++#define D_RP_MSG_LEN            5
+ 
+ /*
+  * struct rpmsgtty_port - Wrapper struct for imx rpmsg tty port.
+@@ -48,15 +50,15 @@ static int rpmsg_tty_cb(struct rpmsg_device *rpdev, void *data, int len,
+ 	if (len == 0)
+ 		return 0;
+ 
+-	dev_dbg(&rpdev->dev, "msg(<- src 0x%x) len %d\n", src, len);
++	//dev_dbg(&rpdev->dev, "msg(<- src 0x%x) len %d\n", src, len);
+ 
+-	print_hex_dump(KERN_DEBUG, __func__, DUMP_PREFIX_NONE, 16, 1,
+-			data, len,  true);
++	//print_hex_dump(KERN_DEBUG, __func__, DUMP_PREFIX_NONE, 16, 1,
++	//		data, len,  true);
+ 
+ 	spin_lock_bh(&cport->rx_lock);
+ 	space = tty_prepare_flip_string(&cport->port, &cbuf, len);
+ 	if (space <= 0) {
+-		dev_err(&rpdev->dev, "No memory for tty_prepare_flip_string\n");
++		//dev_err(&rpdev->dev, "No memory for tty_prepare_flip_string\n");
+ 		spin_unlock_bh(&cport->rx_lock);
+ 		return -ENOMEM;
+ 	}
+@@ -142,6 +144,7 @@ static int rpmsg_tty_probe(struct rpmsg_device *rpdev)
+ 	int ret;
+ 	struct rpmsgtty_port *cport;
+ 	struct tty_driver *rpmsgtty_driver;
++	unsigned char msg[D_RP_MSG_LEN];
+ 
+ 	dev_info(&rpdev->dev, "new channel: 0x%x -> 0x%x!\n",
+ 			rpdev->src, rpdev->dst);
+@@ -186,7 +189,12 @@ static int rpmsg_tty_probe(struct rpmsg_device *rpdev)
+ 	 * send a message to our remote processor, and tell remote
+ 	 * processor about this channel
+ 	 */
+-	ret = rpmsg_send(rpdev->ept, MSG, strlen(MSG));
++        msg[0] = D_RP_STA;
++        msg[1] = (rpdev->src & 0xff);
++        msg[2] = ((rpdev->src >> 8) & 0xff);
++        msg[3] = D_RP_DRV_ID;
++        msg[4] = 0;
++        ret = rpmsg_send(rpdev->ept, msg, D_RP_MSG_LEN);
+ 	if (ret) {
+ 		dev_err(&rpdev->dev, "rpmsg_send failed: %d\n", ret);
+ 		goto error;
+diff --git a/drivers/rpmsg/rpmsg_can.c b/drivers/rpmsg/rpmsg_can.c
+new file mode 100644
+index 0000000..0d48e4f
+--- /dev/null
++++ b/drivers/rpmsg/rpmsg_can.c
+@@ -0,0 +1,401 @@
++/**
++ * AS - the open source Automotive Software on https://github.com/parai
++ *
++ * Copyright (C) 2016  AS <parai@foxmail.com>
++ *
++ * This source code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by the
++ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * for more details.
++ */
++/* ============================ [ INCLUDES  ] ====================================================== */
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/rpmsg.h>
++#include <linux/clk.h>
++#include <linux/errno.h>
++#include <linux/if_arp.h>
++#include <linux/interrupt.h>
++#include <linux/netdevice.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/rtnetlink.h>
++#include <linux/skbuff.h>
++#include <linux/spinlock.h>
++#include <linux/string.h>
++#include <linux/types.h>
++
++#include <linux/can/dev.h>
++#include <linux/can/error.h>
++
++
++/* ============================ [ MACROS    ] ====================================================== */
++
++/*
++ * Important Note: TX mailbox configuration
++ * TX mailboxes should be restricted to the number of SKB buffers to avoid
++ * maintaining SKB buffers separately. TX mailboxes should be a power of 2
++ * for the mailbox logic to work.  Top mailbox numbers are reserved for RX
++ * and lower mailboxes for TX.
++ *
++ * HECC_MAX_TX_MBOX     HECC_MB_TX_SHIFT
++ * 4 (default)          2
++ * 8                    3
++ * 16                   4
++ */
++#define HECC_MB_TX_SHIFT        0 /* as per table above */
++#define HECC_MAX_TX_MBOX        BIT(HECC_MB_TX_SHIFT)
++
++#define D_RP_STA		0x55
++#define D_RP_DRV_ID		0xA2
++#define D_RP_MSG_LEN		5
++
++/* ============================ [ TYPES     ] ====================================================== */
++
++/**
++ * struct rpmsg_can_dev - This definition define CAN driver instance
++ * @can:			CAN private data structure.
++ * @napi:			NAPI structure
++ * @dev:			Network device data structure
++ * @spin:			Spin lock
++ * @rpmsg:			Pointer to struct rpmsg device
++ */
++struct rpmsg_can_dev {
++	struct can_priv can;
++	struct napi_struct napi;
++	struct net_device *ndev;
++
++	spinlock_t can_lock;
++	struct rpmsg_device *rpdev;
++};
++/* ============================ [ DECLARES  ] ====================================================== */
++static int rpmsg_can_probe(struct rpmsg_device *rpdev);
++static int rpmsg_can_cb(struct rpmsg_device *rpdev, void *data, int len,
++						void *priv, u32 src);
++static void rpmsg_can_remove(struct rpmsg_device *rpdev);
++
++static int rpcan_open(struct net_device *ndev);
++static int rpcan_close(struct net_device *ndev);
++static int rpcan_start_xmit(struct sk_buff *skb, struct net_device *ndev);
++/* ============================ [ DATAS     ] ====================================================== */
++static const struct net_device_ops rpcan_netdev_ops = {
++	.ndo_open	= rpcan_open,
++	.ndo_stop	= rpcan_close,
++	.ndo_start_xmit	= rpcan_start_xmit,
++	.ndo_change_mtu	= can_change_mtu,
++};
++
++static struct rpmsg_device_id rpmsg_driver_can_id_table[] = {
++	{ .name = "rpmsg-virtual-can-channel-1" },
++        { .name = "rpmsg-virtual-can-channel" },
++	{ },
++};
++MODULE_DEVICE_TABLE(rpmsg, rpmsg_driver_can_id_table);
++static struct rpmsg_driver rpmsg_can_client = {
++	.drv.name	= KBUILD_MODNAME,
++	.drv.owner	= THIS_MODULE,
++	.id_table	= rpmsg_driver_can_id_table,
++	.probe		= rpmsg_can_probe,
++	.callback	= rpmsg_can_cb,
++	.remove		= rpmsg_can_remove,
++};
++static const struct can_bittiming_const rpcan_bittiming_const = {
++	.name = KBUILD_MODNAME,
++	.tseg1_min = 1,		/* Time segment 1 = prop_seg + phase_seg1 */
++	.tseg1_max = 64,
++	.tseg2_min = 1,		/* Time segment 2 = phase_seg2 */
++	.tseg2_max = 64,
++	.sjw_max = 64,
++	.brp_min = 1,
++	.brp_max = 1024,
++	.brp_inc = 1
++};
++
++static const struct can_bittiming_const rpcan_data_bittiming_const = {
++	.name = KBUILD_MODNAME,
++	.tseg1_min = 1,		/* Time segment 1 = prop_seg + phase_seg1 */
++	.tseg1_max = 64,
++	.tseg2_min = 1,		/* Time segment 2 = phase_seg2 */
++	.tseg2_max = 64,
++	.sjw_max = 64,
++	.brp_min = 1,
++	.brp_max = 1024,
++	.brp_inc = 1,
++};
++
++int dindex=0;
++
++/* ============================ [ LOCALS    ] ====================================================== */
++
++/**
++ * rpcan_open - Driver open routine
++ * @ndev:	Pointer to net_device structure
++ *
++ * This is the driver open routine.
++ * Return: 0 on success and failure value on error
++ */
++static int rpcan_open(struct net_device *ndev)
++{
++	struct rpmsg_can_dev *priv = netdev_priv(ndev);
++	int ret;
++
++	ret = open_candev(ndev);
++	if (ret)
++		return ret;
++	netif_start_queue(priv->ndev);
++	dindex=0;
++	return 0;
++}
++
++/**
++ * rpcan_close - Driver close routine
++ * @ndev:	Pointer to net_device structure
++ *
++ * Return: 0 always
++ */
++static int rpcan_close(struct net_device *ndev)
++{
++	netif_stop_queue(ndev);
++	close_candev(ndev);
++	return 0;
++}
++
++static int rpcan_set_bittiming(struct net_device *dev)
++{
++
++        return 0;
++}
++
++/**
++ * rpcan_start_xmit - Starts the transmission
++ * @skb:	sk_buff pointer that contains data to be Txed
++ * @ndev:	Pointer to net_device structure
++ *
++ * This function is invoked from upper layers to initiate transmission. This
++ * function uses the next available free txbuff and populates their fields to
++ * start the transmission.
++ *
++ * Return: 0 on success and failure value on error
++ */
++static int rpcan_start_xmit(struct sk_buff *skb, struct net_device *ndev)
++{
++	int ret = 0;
++	struct rpmsg_can_dev *priv = netdev_priv(ndev);
++	struct net_device_stats *stats = &ndev->stats;
++	struct can_frame *cf = (struct can_frame *)skb->data;
++	struct rpmsg_device *rpdev = priv->rpdev;
++	int msg_size, i;
++
++	if (can_dropped_invalid_skb(ndev, skb))
++	{
++		stats->tx_dropped++;
++		return NETDEV_TX_OK;
++	}
++
++	if (!skb)
++	{
++		dev_err(&rpdev->dev, "buf shouldn't be null.\n");
++		return -ENOMEM;
++	}
++
++	msg_size = rpmsg_get_buffer_size(rpdev->ept);
++	if (msg_size < 0)
++	{
++		dev_err(&rpdev->dev, "rpmsg get buff error.\n");
++		return msg_size;
++	}
++
++	if (msg_size < sizeof(*cf))
++	{
++		dev_err(&rpdev->dev, "No enouth space.\n");
++		return -ENOMEM;
++	}
++	netif_stop_queue(ndev);
++	can_put_echo_skb(skb, ndev, 0);
++	ret = rpmsg_trysend(rpdev->ept, (void *)cf, sizeof(*cf));
++	if (ret)
++	{
++		can_get_echo_skb(ndev, 0);
++		can_free_echo_skb(ndev, 0);
++                stats->tx_dropped++;
++		netif_wake_queue(ndev);
++		dev_err(&rpdev->dev, "CAN: rpmsg_send failed: %d\n", ret);
++		return ret;
++	}
++
++
++	can_get_echo_skb(ndev, 0);
++	netif_wake_queue(ndev);
++
++	stats->tx_bytes += cf->can_dlc;
++	stats->tx_packets++;
++
++	return NETDEV_TX_OK;
++}
++
++static int rpmsg_can_cb(struct rpmsg_device *rpdev, void *data, int len,
++						void *priv, u32 src)
++{
++	struct net_device *ndev = (struct net_device *)priv;
++	struct rpmsg_can_dev *rpriv = (struct rpmsg_can_dev *)priv;
++	struct net_device_stats *stats = &ndev->stats;
++	struct can_frame *cf;
++	struct sk_buff *skb;
++	int i;
++
++	//dev_info(&rpdev->dev, "incoming can msg %d (src: 0x%x)\n", (int)stats->rx_packets+1, src);
++
++	//print_hex_dump(KERN_DEBUG, "rpmsg_can_cb RX: ", DUMP_PREFIX_NONE, 16, 1, data, len,  true);
++
++	
++	spin_lock(&rpriv->can_lock);
++
++	skb = alloc_can_skb(ndev, &cf);
++	if (unlikely(!skb)) {
++		dev_err(&rpdev->dev, "No memory for CAN skb\n");
++		spin_unlock(&rpriv->can_lock);
++		stats->rx_dropped++;
++		return -ENOMEM;
++	}
++
++	if(sizeof(*cf) != len)
++	{
++		stats->rx_dropped++;
++		spin_unlock(&rpriv->can_lock);
++		dev_err(&rpdev->dev, "CAN: invalid length(%d != %ld)\n", len,sizeof(*cf));
++		return -ENOMEM;;
++	}
++
++	memcpy(cf,data,len);
++
++	stats->rx_bytes += cf->can_dlc;
++	stats->rx_packets++;
++
++	netif_receive_skb(skb);
++
++	spin_unlock(&rpriv->can_lock);
++	return 0;
++}
++
++static void rpcan_start(struct net_device *dev)
++{
++	/* TODO */
++}
++static int rpcan_set_mode(struct net_device *dev, enum can_mode mode)
++{
++	switch (mode) {
++	case CAN_MODE_START:
++		rpcan_start(dev);
++		netif_wake_queue(dev);
++		break;
++	default:
++		return -EOPNOTSUPP;
++	}
++
++	return 0;
++}
++
++static int __rpcan_get_berr_counter(const struct net_device *dev,
++				    struct can_berr_counter *bec)
++{
++	bec->rxerr = 0;
++	bec->txerr = 0;
++
++	return 0;
++}
++static int rpcan_get_berr_counter(const struct net_device *dev,
++				  struct can_berr_counter *bec)
++{
++	__rpcan_get_berr_counter(dev, bec);
++
++	return 0;
++}
++
++static int rpmsg_can_probe(struct rpmsg_device *rpdev)
++{
++	int ret;
++	struct rpmsg_can_dev *priv;
++	struct net_device *ndev;
++	unsigned char msg[D_RP_MSG_LEN];
++
++	/* Create a CAN device instance */
++	ndev = alloc_candev(sizeof(*priv), HECC_MAX_TX_MBOX);
++	if (!ndev)
++		return -ENOMEM;
++
++	priv = netdev_priv(ndev);
++	priv->ndev = ndev;
++	priv->rpdev = rpdev;
++
++	rpdev->ept->priv = ndev;
++
++	ndev->netdev_ops = &rpcan_netdev_ops;
++
++	priv->can.bittiming.bitrate = 1000000;
++	priv->can.clock.freq = 24000000;
++	priv->can.bittiming_const = &rpcan_bittiming_const;
++	priv->can.do_set_bittiming = rpcan_set_bittiming;
++	priv->can.data_bittiming_const = &rpcan_data_bittiming_const;
++	priv->can.do_set_mode = rpcan_set_mode;
++	priv->can.do_get_berr_counter = rpcan_get_berr_counter;
++	priv->can.ctrlmode_supported =  CAN_CTRLMODE_3_SAMPLES |
++					CAN_CTRLMODE_LOOPBACK |
++					CAN_CTRLMODE_LISTENONLY |
++					CAN_CTRLMODE_BERR_REPORTING;
++
++	ndev->flags = IFF_ECHO | IFF_NOARP;
++
++	ret = register_candev(ndev);
++
++	spin_lock_init(&priv->can_lock);
++
++	dev_info(&rpdev->dev, "new channel: 0x%x -> 0x%x!\n",
++					rpdev->src, rpdev->dst);
++
++
++        /*
++         * send a message to our remote processor, and tell remote
++         * processor about this channel
++         */
++	msg[0] = D_RP_STA;
++	msg[1] = (rpdev->src & 0xff);
++        msg[2] = ((rpdev->src >> 8) & 0xff);
++	msg[3] = D_RP_DRV_ID;
++	msg[4] = 0;
++        ret = rpmsg_send(rpdev->ept, msg, D_RP_MSG_LEN);
++        if (ret) {
++                dev_err(&rpdev->dev, "rpmsg_send failed: %d\n", ret);
++                return ret;
++        }
++
++	return 0;
++}
++
++static void rpmsg_can_remove(struct rpmsg_device *rpdev)
++{
++	
++	struct net_device *ndev = rpdev->ept->priv;
++
++	unregister_candev(ndev);
++	free_candev(ndev);
++}
++
++
++static int __init rpmsg_client_can_init(void)
++{
++	return register_rpmsg_driver(&rpmsg_can_client);
++}
++static void __exit rpmsg_client_can_fini(void)
++{
++	unregister_rpmsg_driver(&rpmsg_can_client);
++}
++/* ============================ [ FUNCTIONS ] ====================================================== */
++module_init(rpmsg_client_can_init);
++module_exit(rpmsg_client_can_fini);
++
++MODULE_DESCRIPTION("Remote processor messaging sample client driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/rpmsg/rpmsg_core.c b/drivers/rpmsg/rpmsg_core.c
+index 8122807..edb8549 100644
+--- a/drivers/rpmsg/rpmsg_core.c
++++ b/drivers/rpmsg/rpmsg_core.c
+@@ -283,6 +283,25 @@ int rpmsg_trysend_offchannel(struct rpmsg_endpoint *ept, u32 src, u32 dst,
+ }
+ EXPORT_SYMBOL(rpmsg_trysend_offchannel);
+ 
++/**
++ * rpmsg_get_buffer_size()
++ * This function returns buffer size available for sending messages.
++ *
++ * @ept: the rpmsg endpoint
++ *
++ * Returns buffer size on success and an appropriate error value on failure.
++ */
++int rpmsg_get_buffer_size(struct rpmsg_endpoint *ept)
++{
++	if (WARN_ON(!ept))
++		return -EINVAL;
++	if (!ept->ops->get_buffer_size)
++		return -ENXIO;
++
++	return ept->ops->get_buffer_size(ept);
++}
++EXPORT_SYMBOL(rpmsg_get_buffer_size);
++
+ /*
+  * match an rpmsg channel with a channel info struct.
+  * this is used to make sure we're not creating rpmsg devices for channels
+diff --git a/drivers/rpmsg/rpmsg_internal.h b/drivers/rpmsg/rpmsg_internal.h
+index 0d791c3..e546873 100644
+--- a/drivers/rpmsg/rpmsg_internal.h
++++ b/drivers/rpmsg/rpmsg_internal.h
+@@ -46,6 +46,7 @@ struct rpmsg_device_ops {
+  * @trysend:		see @rpmsg_trysend(), required
+  * @trysendto:		see @rpmsg_trysendto(), optional
+  * @trysend_offchannel:	see @rpmsg_trysend_offchannel(), optional
++ * @get_buffer_size:	see @rpmsg_get_buffer_size(), optional
+  *
+  * Indirection table for the operations that a rpmsg backend should implement.
+  * In addition to @destroy_ept, the backend must at least implement @send and
+@@ -63,6 +64,7 @@ struct rpmsg_endpoint_ops {
+ 	int (*trysendto)(struct rpmsg_endpoint *ept, void *data, int len, u32 dst);
+ 	int (*trysend_offchannel)(struct rpmsg_endpoint *ept, u32 src, u32 dst,
+ 			     void *data, int len);
++	int (*get_buffer_size)(struct rpmsg_endpoint *ept);
+ 	__poll_t (*poll)(struct rpmsg_endpoint *ept, struct file *filp,
+ 			     poll_table *wait);
+ };
+diff --git a/drivers/rpmsg/virtio_rpmsg_bus.c b/drivers/rpmsg/virtio_rpmsg_bus.c
+index 25eabad..bb7f1ff 100644
+--- a/drivers/rpmsg/virtio_rpmsg_bus.c
++++ b/drivers/rpmsg/virtio_rpmsg_bus.c
+@@ -177,6 +177,7 @@ static int virtio_rpmsg_trysendto(struct rpmsg_endpoint *ept, void *data,
+ 				  int len, u32 dst);
+ static int virtio_rpmsg_trysend_offchannel(struct rpmsg_endpoint *ept, u32 src,
+ 					   u32 dst, void *data, int len);
++static int virtio_get_buffer_size(struct rpmsg_endpoint *ept);
+ 
+ static const struct rpmsg_endpoint_ops virtio_endpoint_ops = {
+ 	.destroy_ept = virtio_rpmsg_destroy_ept,
+@@ -186,6 +187,7 @@ static const struct rpmsg_endpoint_ops virtio_endpoint_ops = {
+ 	.trysend = virtio_rpmsg_trysend,
+ 	.trysendto = virtio_rpmsg_trysendto,
+ 	.trysend_offchannel = virtio_rpmsg_trysend_offchannel,
++	.get_buffer_size = virtio_get_buffer_size,
+ };
+ 
+ /**
+@@ -702,6 +704,15 @@ static int virtio_rpmsg_trysend_offchannel(struct rpmsg_endpoint *ept, u32 src,
+ 	return rpmsg_send_offchannel_raw(rpdev, src, dst, data, len, false);
+ }
+ 
++static int virtio_get_buffer_size(struct rpmsg_endpoint *ept)
++{
++	struct rpmsg_device *rpdev = ept->rpdev;
++	struct virtio_rpmsg_channel *vch = to_virtio_rpmsg_channel(rpdev);
++	struct virtproc_info *vrp = vch->vrp;
++
++	return vrp->buf_size;
++}
++
+ static int rpmsg_recv_single(struct virtproc_info *vrp, struct device *dev,
+ 			     struct rpmsg_hdr *msg, unsigned int len)
+ {
+diff --git a/include/linux/rpmsg.h b/include/linux/rpmsg.h
+index 179f1d0..24aa015 100644
+--- a/include/linux/rpmsg.h
++++ b/include/linux/rpmsg.h
+@@ -133,6 +133,7 @@ int rpmsg_trysend(struct rpmsg_endpoint *ept, void *data, int len);
+ int rpmsg_trysendto(struct rpmsg_endpoint *ept, void *data, int len, u32 dst);
+ int rpmsg_trysend_offchannel(struct rpmsg_endpoint *ept, u32 src, u32 dst,
+ 			     void *data, int len);
++int rpmsg_get_buffer_size(struct rpmsg_endpoint *ept);
+ 
+ __poll_t rpmsg_poll(struct rpmsg_endpoint *ept, struct file *filp,
+ 			poll_table *wait);
+@@ -235,6 +236,14 @@ static inline int rpmsg_trysend_offchannel(struct rpmsg_endpoint *ept, u32 src,
+ 	return -ENXIO;
+ }
+ 
++static int rpmsg_get_buffer_size(struct rpmsg_endpoint *ept)
++{
++	/* This shouldn't be possible */
++	WARN_ON(1);
++
++	return -ENXIO;
++}
++
+ static inline __poll_t rpmsg_poll(struct rpmsg_endpoint *ept,
+ 				      struct file *filp, poll_table *wait)
+ {

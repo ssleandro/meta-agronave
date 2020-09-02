@@ -1,0 +1,12 @@
+[Unit]
+Description=SocketCAN interface can0 with a baudrate of 250000
+After=multi-user.target  rpmsg-load.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/ip link set can0 type can bitrate 250000 ; /sbin/ifconfig can0 up ; /sbin/ifconfig can0 txqueuelen 1000
+ExecReload=/sbin/ifconfig can0 down ; /sbin/ip link set can0 type can bitrate 250000 ; /sbin/ifconfig can0 up ; /sbin/ifconfig can0 txqueuelen 1000
+ExecStop=/sbin/ifconfig can0 down
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+diff --git a/libevdev/Makefile.am b/libevdev/Makefile.am
+index fcb434d..71f8994 100644
+--- a/libevdev/Makefile.am
++++ b/libevdev/Makefile.am
+@@ -24,7 +24,7 @@ libevdev_la_LDFLAGS = \
+ 
+ EXTRA_libevdev_la_DEPENDENCIES = $(srcdir)/libevdev.sym
+ 
+-libevdevincludedir = $(includedir)/libevdev-1.0/libevdev
++libevdevincludedir = $(includedir)/libevdev
+ libevdevinclude_HEADERS = libevdev.h libevdev-uinput.h
+ 
+ event-names.h: Makefile make-event-names.py
