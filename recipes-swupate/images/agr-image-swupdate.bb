@@ -87,6 +87,11 @@ IMAGE_INSTALL_append = " \
     i2c-tools \
     evtest \
     libevdev\
+    libzip \
+    libsocketcan \
+    tslib \
+    agronave-app-service \
+    agronave-pro-update-manager \
 "
 
 ERPC_COMPS ?= ""
