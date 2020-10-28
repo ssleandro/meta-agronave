@@ -1,22 +1,22 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI_append = " file://logo_linux_clut224.ppm \
-                   file://0003-Kernel_Add_dtbs.patch \
+		   file://0001-Kernel_Changes.patch \
 		   file://agr_defconfig" 
 
 KERNEL_DEVICETREE = " \
-        freescale/fsl-imx8mq-var-dart-wifi-hdmi.dtb \
-        freescale/fsl-imx8mq-var-dart-wifi-lvds.dtb \
-        freescale/fsl-imx8mq-var-dart-wifi-lvds-hdmi.dtb \
-        freescale/fsl-imx8mq-var-dart-sd-hdmi.dtb \
-        freescale/fsl-imx8mq-var-dart-sd-lvds.dtb \
-        freescale/fsl-imx8mq-var-dart-sd-lvds-hdmi.dtb \
-        freescale/fsl-imx8mq-var-dart-m4-wifi-hdmi.dtb \
-        freescale/fsl-imx8mq-var-dart-m4-wifi-lvds.dtb \
-        freescale/fsl-imx8mq-var-dart-m4-wifi-lvds-hdmi.dtb \
-        freescale/fsl-imx8mq-var-dart-m4-sd-hdmi.dtb \
-	freescale/fsl-imx8mq-var-dart-m4-sd-lvds.dtb \
-        freescale/fsl-imx8mq-var-dart-m4-sd-lvds-hdmi.dtb \
+        freescale/imx8mq-var-dart-wifi-hdmi.dtb \
+        freescale/imx8mq-var-dart-wifi-lvds.dtb \
+        freescale/imx8mq-var-dart-wifi-lvds-hdmi.dtb \
+        freescale/imx8mq-var-dart-sd-hdmi.dtb \
+        freescale/imx8mq-var-dart-sd-lvds.dtb \
+        freescale/imx8mq-var-dart-sd-lvds-hdmi.dtb \
+        freescale/imx8mq-var-dart-m4-wifi-hdmi.dtb \
+        freescale/imx8mq-var-dart-m4-wifi-lvds.dtb \
+        freescale/imx8mq-var-dart-m4-wifi-lvds-hdmi.dtb \
+        freescale/imx8mq-var-dart-m4-sd-hdmi.dtb \
+	freescale/imx8mq-var-dart-m4-sd-lvds.dtb \
+        freescale/imx8mq-var-dart-m4-sd-lvds-hdmi.dtb \
 "
 
 do_configure_prepend() {
